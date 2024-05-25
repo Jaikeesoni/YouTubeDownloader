@@ -1,40 +1,41 @@
 import streamlit as st
 from pytube import YouTube
-import tempfile
 import os
 
-st.title('YouTube Video Downloader')
+# Function to download YouTube video
+def download_video(url, resolution, download_path):
+    try:
+        yt = YouTube(url)
+        stream = yt.streams.filter(res=resolution).first()
+        stream.download(output_path=download_path)
+        st.success("Download completed successfully!")
+    except Exception as e:
+        st.error(f"An error occurred: {str(e)}")
 
-url = st.text_input('Enter the URL of the YouTube video you wish to download:')
+# Streamlit UI
+def main():
+    st.title("YouTube Downloader")
 
-if url:
-    yt = YouTube(url)
-    st.write(f"*Video Title:* {yt.title}")
-    st.image(yt.thumbnail_url)
+    # Input URL
+    url = st.text_input("Enter YouTube video URL:", "")
 
-    stream = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').desc()
-    options = [(i.itag, i.resolution) for i in stream]
-    selected_option = st.selectbox('Choose the quality/resolution of the video to download:', options, format_func=lambda x: x[1])
+    # Quality/Resolution selection
+    resolution_options = ["360p", "720p", "1080p"]
+    resolution = st.selectbox("Select resolution:", resolution_options)
 
-    if st.button('Download Video'):
-        selected_stream = stream.get_by_itag(selected_option[0])
-        safe_filename = yt.title.replace('/', '-').replace('\\', '-').replace(':', '-').replace('|', '-').replace('*', '-').replace('?', '-').replace('"', '-').replace('<', '-').replace('>', '-')
+    # Download path selection
+    download_path = st.text_input("Enter download path:", "")
 
-        with tempfile.NamedTemporaryFile(delete=False) as tmpfile:
-            try:
-                # Download the video directly to a temporary file
-                selected_stream.download(output_path=os.path.dirname(tmpfile.name), filename=safe_filename)
-                tmpfile.close()
+    # Download button
+    if st.button("Download"):
+        if url == "":
+            st.warning("Please enter a valid YouTube video URL.")
+        elif download_path == "":
+            st.warning("Please enter a download path.")
+        elif not os.path.isdir(download_path):
+            st.error("Invalid download path. Please enter a valid directory path.")
+        else:
+            download_video(url, resolution, download_path)
 
-                # Provide a download button
-                with open(tmpfile.name, 'rb') as f:
-                    st.download_button(label="Download Video",
-                                       data=f,
-                                       file_name=safe_filename + ".mp4",
-                                       mime="video/mp4")
-            except Exception as e:
-                st.error(f"Failed to download the video: {e}")
-            finally:
-                # Ensure the temporary file is deleted after serving
-                if os.path.exists(tmpfile.name):
-                    os.remove(tmpfile.name)
+if __name__ == "__main__":
+    main()
