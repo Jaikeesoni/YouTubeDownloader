@@ -1,5 +1,16 @@
 import streamlit as st
 from pytube import YouTube
+import os
+
+# Function to download YouTube video
+def download_video(url):
+    try:
+        yt = YouTube(url)
+        stream = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').desc().first()
+        stream.download()
+        st.success("Download completed successfully!")
+    except Exception as e:
+        st.error(f"An error occurred: {str(e)}")
 
 # Streamlit UI
 def main():
@@ -13,20 +24,7 @@ def main():
         if url == "":
             st.warning("Please enter a valid YouTube video URL.")
         else:
-            try:
-                yt = YouTube(url)
-                st.write(f"Title: {yt.title}")
-                st.write(f"Author: {yt.author}")
-                st.write(f"Length: {yt.length} seconds")
-                st.write(f"Rating: {yt.rating}")
-                st.write("Available Formats:")
-                for stream in yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution'):
-                    st.write(f"- {stream.resolution} ({stream.mime_type})")
-                    if st.button(f"Download {stream.resolution}"):
-                        stream.download()
-                        st.success("Download completed successfully!")
-            except Exception as e:
-                st.error(f"An error occurred: {str(e)}")
+            download_video(url)
 
 if __name__ == "__main__":
     main()
