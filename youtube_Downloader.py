@@ -1,41 +1,21 @@
 import streamlit as st
-from pytube import YouTube
-import os
+import youtube_dl
 
-# Function to download YouTube video
-def download_video(url, resolution, download_path):
-    try:
-        yt = YouTube(url)
-        stream = yt.streams.filter(res=resolution).first()
-        stream.download(output_path=download_path)
-        st.success("Download completed successfully!")
-    except Exception as e:
-        st.error(f"An error occurred: {str(e)}")
+# Create a Streamlit app
+st.title("YouTube Video Downloader")
 
-# Streamlit UI
-def main():
-    st.title("YouTube Downloader")
+# Create a text input for the video URL
+video_url = st.text_input("Enter the YouTube video URL")
 
-    # Input URL
-    url = st.text_input("Enter YouTube video URL:", "")
+# Create a dropdown menu for the download path
+download_path = st.selectbox("Select a download path", ["Downloads", "Desktop", "Documents"])
 
-    # Quality/Resolution selection
-    resolution_options = ["360p", "720p", "1080p"]
-    resolution = st.selectbox("Select resolution:", resolution_options)
+# Create a button to trigger the download
+if st.button("Download Video"):
+    # Use youtube-dl to download the video
+    ydl_opts = {'outtmpl': f"{download_path}/%(title)s.%(ext)s'}
+    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        ydl.download([video_url])
 
-    # Download path selection
-    download_path = st.text_input("Enter download path:", "")
-
-    # Download button
-    if st.button("Download"):
-        if url == "":
-            st.warning("Please enter a valid YouTube video URL.")
-        elif download_path == "":
-            st.warning("Please enter a download path.")
-        elif not os.path.isdir(download_path):
-            st.error("Invalid download path. Please enter a valid directory path.")
-        else:
-            download_video(url, resolution, download_path)
-
-if __name__ == "__main__":
-    main()
+    # Display a success message
+    st.success("Video downloaded successfully!")
