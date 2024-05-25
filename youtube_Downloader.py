@@ -32,7 +32,7 @@ def main():
             st.warning("Please enter a valid YouTube video URL.")
         elif download_path == "":
             st.warning("Please enter a download path.")
-        elif os.path.isdir(download_path):
+        elif not os.path.isdir(download_path):
             st.error("Invalid download path. Please enter a valid directory path.")
         else:
             download_video(url, resolution, download_path)
