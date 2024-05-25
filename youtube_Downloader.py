@@ -20,7 +20,7 @@ if url:
         selected_stream = stream.get_by_itag(selected_option[0])
         safe_filename = yt.title.replace('/', '-').replace('\\', '-').replace(':', '-').replace('|', '-').replace('*', '-').replace('?', '-').replace('"', '-').replace('<', '-').replace('>', '-')
 
-        with tempfile.NamedTemporaryFile(delete=False) as tmpfile:
+        with tempfile.NamedTemporaryFile(delete=True) as tmpfile:
             try:
                 # Download the video directly to a temporary file
                 selected_stream.download(output_path=os.path.dirname(tmpfile.name), filename=safe_filename)
